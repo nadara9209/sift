@@ -526,7 +526,7 @@ void CWebcamDlg::OnCapture()
 
 
 	
-	/////////////////////////////////////////////3
+	/////////////////////////////////////////////
 	end=clock();
 	
 	t.Format(_T("time= %f [sec]"),(end-start)/(double)CLOCKS_PER_SEC);
@@ -859,7 +859,8 @@ xy* fast9_detect_nonmax(const byte* im, int xsize, int ysize, int stride, int b,
 	int num_corners;
 	int* scores;
 	xy* nonmax;
-
+	
+	//
 	corners = fast9_detect(im, xsize, ysize, stride, b, &num_corners);
 	scores = fast9_score(im, stride, corners, num_corners, b);
 	nonmax = nonmax_suppression(corners, scores, num_corners, ret_num_corners);
@@ -3846,7 +3847,11 @@ int* fast9_score(const byte* i, int stride, xy* corners, int num_corners, int b)
 
 
 xy* fast9_detect(const byte* im, int xsize, int ysize, int stride, int b, int* ret_num_corners)
-{
+{	//keypoint detecting algorithm "fast"
+	//fast 알고리즘 중 속도와 효율이 가장 높은 fast-9를 사용하고 있다.
+	//fast.h에서는 fast9~12가 모두 선언 되어있는 것을 볼 수 있다.
+	//환경에 따라 달라질 수 있는 빛의 강도나 밝기를 고려한 것으로 보인다.
+	
 	int num_corners=0;
 	xy* ret_corners;
 	int rsize=512;

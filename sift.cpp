@@ -172,18 +172,16 @@ void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys)/// 해당 부분은 바로위�
     
 }
 
-PGM create_init_image(PGM &src) //이미지 생성하는 부분.
+PGM create_init_image(PGM &src) //이미지 참조하는 부분.
 {
-    if(IMG_DOUBLED){ // IMG_DOUBLED의 경우 위에서 false로 선언되어있습니다. 즉, 
+    if(IMG_DOUBLED){ // src를 참조하여, 이미지가 존재하지 않을 경우
 
-        
-        cout<<"not defined sequence!!!!!!!!!!!!"<<endl;
-        
+        cout<<"not defined sequence!!!!!!!!!!!!"<<endl;       
         return src;
-    }
+	}
     else{
-        PGM tmp(src);
         
+		PGM tmp(src);
         double sig_diff=sqrt(SIGMA0*SIGMA0 - SIGMAi*SIGMAi);
         tmp=gaussian_filter(tmp,sig_diff);
         
@@ -221,31 +219,33 @@ void build_image_pyramid(PGM &base,PGM **L,PGM **DoG)
     for(int o=0;o<OCT;o++){  
         for(int i=0;i<S+2;i++){
             //DoG[o][i]=L[o][i+1]-L[o][i];
-            sub_pgm(DoG[o][i],L[o][i+1],L[o][i]); // 이미지 두개를 Subtract 한다. 
+            sub_pgm(DoG[o][i],L[o][i+1],L[o][i]); // 같은 옥타브의 다른 스케일 두개를 빼주는 것입니다. 그 값을 DOG 배열에 저장하는 것입니다. 
+												  // DOG[o][i] = L[o][i+1] - L[o][i]
         }
     }
 }
 
-bool is_extremum(PGM **DoG,int o,int s,int u,int v)
+bool is_extremum(PGM **DoG,int o,int s,int u,int v) // 극값 추출할 때, 예외처리 부분인 것으로 추정.
 {
-    double val=DoG[o][s][u][v];
+    double val=DoG[o][s][u][v]; // o는 octave , s는 scale .. u, v의 경우 너비, 높이 등으로 추정된다.
+								// 
     
-    if(val>0){
-        for(int ds=s-1;ds<=s+1;ds++)
-            for(int du=u-1;du<=u+1;du++)
-                for(int dv=v-1;dv<=v+1;dv++)
+    if(val>0){ // 
+        for(int ds=s-1;ds<=s+1;ds++) // 앞뒤 scale에서 존재하는 값을 비교하기 위한 for문
+            for(int du=u-1;du<=u+1;du++) // 
+                for(int dv=v-1;dv<=v+1;dv++) // 기준점을  9개 값을 비교,
                     if(val<DoG[o][ds][du][dv]) return false;
     }
-    else{
-        for(int ds=s-1;ds<=s+1;ds++)
-            for(int du=u-1;du<=u+1;du++)
-                for(int dv=v-1;dv<=v+1;dv++)
+    else{ 
+        for(int ds=s-1;ds<=s+1;ds++) //
+            for(int du=u-1;du<=u+1;du++) //
+                for(int dv=v-1;dv<=v+1;dv++) //
                     if(val>DoG[o][ds][du][dv]) return false;    
     }
     
     return true;
 }
-SIFT_DESCRIPTOR* interp_extremum(PGM **DoG,int o,int s,int u,int v)
+SIFT_DESCRIPTOR* interp_extremum(PGM **DoG,int o,int s,int u,int v)// 극한 값 
 {
     double dx[3];
     double dD[3];
@@ -513,7 +513,7 @@ void descr_hist(PGM &L,SIFT_DESCRIPTOR &feat,double hst[DSCR_WIDTH][DSCR_WIDTH][
     }
     
 }
-void normalize_descr(SIFT_DESCRIPTOR &feat)
+void normalize_descr(SIFT_DESCRIPTOR &feat)   // 설정자의 정리
 {
     double sum=0;
     for(int i=0;i<DSCR_LENGTH;i++) sum+=feat.v[i]*feat.v[i];
@@ -606,23 +606,25 @@ PGM gaussian_filter(PGM &src,double sig)
     
     return dst;
 }
-PGM downsample(PGM &src)
+PGM downsample(PGM &src) // 다운 샘플링
 {
-    int W=src.width() /2;
-    int H=src.height()/2;
-    PGM tmp(W,H);
+    int W=src.width() /2; // W는 입력받은 이미지 src의 반으로 나눈다. 두번쨰 octave의 경우 첫번째 octave의 반으로 저장한다. (너비)
+    int H=src.height()/2; // H는 입력받은 이미지 src의 반으로 나눈다. 두번쨰 octave의 경우 첫번째 octave의 반으로 저장한다. (높이)
+    PGM tmp(W,H); // 정리한( 너비 높이) 값을 저장한다.
     
-    for(int x=0;x<W;x++){
-        for(int y=0;y<H;y++){
-            tmp[x][y]=src[2*x][2*y];
+    for(int x=0;x<W;x++){ // 줄어든 너비 만큼 for문
+        for(int y=0;y<H;y++){// 줄어든 높이만큼 for문
+            tmp[x][y]=src[2*x][2*y]; // 즉, 이전 octave의 2,2에 있는 정보를 다음 octave의 1,1 에 넣어주며, 
+			                         // 이전 octave의 2,4 에 있는 정보를 다음 octave의 1,2에 넣어준다.
+			                         // 이전 octave의 2,6에 있는 정보를 다음 octave의 1,3에 넣어준다.
         }
     }
     
-    return tmp;
+    return tmp;  // 정리된 tmp , 이미지 정보 반환
 }
 void sub_pgm(PGM &dst,PGM &a,PGM &b)
 {
-    int W=min(a.width() ,b.width());
+    int W=min(a.width() ,b.width()); 
     int H=min(a.height(),b.height());
     
     dst.reset(W,H);

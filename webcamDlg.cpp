@@ -18,9 +18,7 @@
 
 using namespace std;
 
-
 #define M_PI       3.14159265358979323846
-
 #define Compare(X, Y) ((X)>=(Y))
 
 #ifdef _DEBUG
@@ -43,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDlg dialog used for App About
 
-unsigned char OLD_RGB[480][640][3]={0,};
+unsigned char OLD_RGB[480][640][3]={0,}; // 해당 배열의 경우 480* 640의 해상도로 정해놓았기 때문에 이와 같이 선언한 것으로 보여진다.
 unsigned char GRAY[480*640]={0,};
 unsigned char OLD_GRAY[480][640]={0,};
 
@@ -60,7 +58,7 @@ public:
 	CAboutDlg();
 	
 // Dialog Data
-	//{{AFX_DATA(CAboutDlg)
+//{{AFX_DATA(CAboutDlg)
 	enum { IDD = IDD_ABOUTBOX };
 	//}}AFX_DATA
 
@@ -330,9 +328,9 @@ Bitmap ResizeClone(Bitmap *bmp, INT width, INT height)
 
 
 
-double euclidDistance(float* vec1, float* vec2, int length) {
+double euclidDistance(float* vec1, float* vec2, int length) { // 유클리드 함수 거리 구하는 것.
      double sum = 0.0;
-     for (int i = 0; i < length; i++) {
+     for (int i = 0; i < length; i++) { // 해당 배열의 경우 480* 640의 해상도로 정해놓았기 때문에 이와 같이 선언한 것으로 보여진다.
          sum += (vec1[i] - vec2[i]) * (vec1[i] - vec2[i]);
      }
      return sqrt(sum);
@@ -527,9 +525,9 @@ void CWebcamDlg::OnCapture()
 
 	
 	/////////////////////////////////////////////
-	end=clock();
+	end=clock();//필요 없는 것. 시간임
 	
-	t.Format(_T("time= %f [sec]"),(end-start)/(double)CLOCKS_PER_SEC);
+	t.Format(_T("time= %f [sec]"),(end-start)/(double)CLOCKS_PER_SEC);//필요 없는 것. 시간임
 	dc.TextOutA(50,time_h,t);
 	time_h=time_h+20;
 	start=clock();

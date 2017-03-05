@@ -11,9 +11,9 @@ using namespace std;
 #include "time.h"
 
 int OCT;
-const double SIGMAi      = 0.5;
-const double SIGMA0      = 1.6;
-const int    S           = 3;
+const double SIGMAi      = 0.5;  
+const double SIGMA0      = 1.6; /
+const int    S           = 3;  // 한 옥타브 당 효율이 높은 것은 3개의 scale을 가지고 있을 때 라고, 논문 p.9 에 명시되어 있다.  
 const bool   IMG_DOUBLED = false;   
 const double CONTR_THR   = 0.04;    
 const double CURV_THR    = 10;
@@ -28,7 +28,7 @@ const double DESCR_INT_FCTR= 512.0;
 
 #define ORI_HIST_BINS 36
 #define round(dbl) dbl >= 0.0 ? (int)(dbl + 0.5) : ((dbl - (double)(int)dbl) <= -0.5 ? (int)dbl : (int)(dbl - 0.5))
-#define M_PI       3.14159265358979323846
+#define M_PI       3.14159265358979323846 // Pi의 값을 정의한 것.
 
 
 PGM  create_init_image(PGM &src);
@@ -50,67 +50,68 @@ void inverse(double mat[3][3],double inv[3][3]);
 
 void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys,CString &t)
 {
-    PGM init_image=create_init_image(_src);
+    PGM init_image=create_init_image(_src); ///이미지 생성하는 부분
     
-	clock_t start;
-	clock_t end;
+	clock_t start; //필요 없는 시간 재는 부분
+	clock_t end;//필요 없는 시간 재는 부분
 
-	t.Format(_T("time= "));
+	t.Format(_T("time= "));//필요 없는 시간 재는 부분
 
     OCT=(int)(log((double)min(init_image.width(),init_image.height())) / log((double)2) - 2);
+	// 위의 식의 경우, 영상을 몇개의 옥타브로 나눌 것인지를 계산하는 부분 입니다. OCT만큼 옥타브가 형성되는 것입니다.
+	// 하지만 왜 위와 같은 식을 갖게되었는지는 알 수 없었습니다.
     
 
-    PGM **L=new PGM*[OCT];                  
-    for(int o=0;o<OCT;o++) L[o]=new PGM[S+3];
+    PGM **L=new PGM*[OCT];      // 형성된 옥타브 만큼 L에게 공간을 할당해줍니다.            
+    for(int o=0;o<OCT;o++) L[o]=new PGM[S+3]; //  즉, 이미지를 만들어줍니다. 해당 부분의 경우, DOG를 실행하기 이전 부분입니다.향후 사용을 위해 할당.
     
-    PGM **DoG=new PGM*[OCT];            
-    for(int o=0;o<OCT;o++) DoG[o]=new PGM[S+2];
+    PGM **DoG=new PGM*[OCT];            // 형성된 옥타브 만큼 DOG에게 공간을 할당해줍니다.
+    for(int o=0;o<OCT;o++) DoG[o]=new PGM[S+2]; // 향후 실행할 DOG를 위한 선언 부분
    
-	start=clock();
+	start=clock();//필요 없는 시간 재는 부분
 
-	//////////////////////////// 요놈이, 2.0초씩 걸렸음! 나쁜넘!!
-	build_image_pyramid(init_image,L,DoG);
+	build_image_pyramid(init_image,L,DoG); // 이미지 피라미드를 실행해줍니다.
     
-	end=clock();
+	end=clock();//필요 없는 시간 재는 부분
 
 	
-	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //1
+	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //1//필요 없는 시간 재는 부분
 	
-	start=clock();
+	start=clock();//필요 없는 시간 재는 부분
 
-    scale_space_extrema(DoG,keys);
-    
-	
-	end=clock();
-	
-	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //2
-	
-	start=clock();
-
-
-    calc_orientation(L,keys);
+    scale_space_extrema(DoG,keys); // scale space , 극한 값을 계산하는 호출 부분입니다.
     
 	
-	end=clock();
+	end=clock();//필요 없는 시간 재는 부분
 	
-	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //3
+	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //2//필요 없는 시간 재는 부분
 	
-	start=clock();
+	start=clock();//필요 없는 시간 재는 부분
+
+
+    calc_orientation(L,keys); // 방향성을 결정해주는 함수 호출
+    
+	
+	end=clock();//필요 없는 시간 재는 부분
+	
+	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //3//필요 없는 시간 재는 부분
+	
+	start=clock();//필요 없는 시간 재는 부분
 
 
 	//////////////////////////// 요놈이, 간간히 0.3초씩 걸렸음! 나쁜넘!!
-    compute_descriptors(L,keys);
+    compute_descriptors(L,keys); // 설정자를  기준값과 비교해주는 부분에 대한 호출 입니다.
 
     
 	
-	end=clock();
+	end=clock();//필요 없는 시간 재는 부분
 	
-	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //4
+	t.AppendFormat(_T("%f [sec],"),(end-start)/(double)CLOCKS_PER_SEC); //4//필요 없는 시간 재는 부분
 	
-	start=clock();
+	start=clock();//필요 없는 시간 재는 부분
 
 
-    for(int o=0;o<OCT;o++){
+    for(int o=0;o<OCT;o++){ // 위에서 할당해준 L과 DOG의 공간을 다시 지워주는 부분. 
         delete[] L[o];
         delete[] DoG[o];
     }
@@ -123,14 +124,14 @@ void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys,CString &t)
     }
     
 	
-	end=clock();
+	end=clock();//필요 없는 시간 재는 부분
 	
-	t.AppendFormat(_T("%f [sec]"),(end-start)/(double)CLOCKS_PER_SEC); //5
+	t.AppendFormat(_T("%f [sec]"),(end-start)/(double)CLOCKS_PER_SEC); //5//필요 없는 시간 재는 부분
 	
-	start=clock();
+	start=clock();//필요 없는 시간 재는 부분
 
 }
-void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys)
+void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys)/// 해당 부분은 바로위의 SIFT 함수와 동일한 구조를 이루고있는 함수 입니다.
 {
     PGM init_image=create_init_image(_src);
     
@@ -171,9 +172,9 @@ void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys)
     
 }
 
-PGM create_init_image(PGM &src)
+PGM create_init_image(PGM &src) //이미지 생성하는 부분.
 {
-    if(IMG_DOUBLED){
+    if(IMG_DOUBLED){ // IMG_DOUBLED의 경우 위에서 false로 선언되어있습니다. 즉, 
 
         
         cout<<"not defined sequence!!!!!!!!!!!!"<<endl;
@@ -192,11 +193,13 @@ PGM create_init_image(PGM &src)
 void build_image_pyramid(PGM &base,PGM **L,PGM **DoG)
 {
 
-    double k=pow(2.0,1.0/S);
+    double k=pow(2.0,1.0/S); // pow함수는 지수승 역할을 합니다.
+	// 해당 식의 경우, 논문 p.7 에 명시되어있는 연산수식이며, 효율적인 연산, 오차의 최소화를 위해 위와 같은 k의 값을 계산합니다.
     
-    double sig[S+3];
+    double sig[S+3]; // S+3 만큼의 배열을 할당해주는 이유는 p.7에 명시 되어있는데, 각 옥타브에 S+3의 이미지를 생성해주어야만 최종 극한값 발견, 탐지(extrema detection)가 전체 옥타브를
+	// 처리할 수 있기 때문입니다.
     
-    sig[0]=SIGMA0;
+    sig[0]=SIGMA0; // SIGMAO 의 경우, 루트2 즉, 1.6의 값으로 선언해주었습니다.
     for(int s=1;s<S+3;s++){
         double sig_prev =pow(k,s-1)*SIGMA0;
         double sig_total=sig_prev*k;
@@ -204,18 +207,21 @@ void build_image_pyramid(PGM &base,PGM **L,PGM **DoG)
         sig[s]=sqrt(sig_total*sig_total - sig_prev*sig_prev);
     }
 
-    for(int o=0;o<OCT;o++){
-        for(int s=0;s<S+3;s++){
-            if(o==0 && s==0) L[o][s]=base;
-            else if(s==0)    L[o][s]=downsample(L[o-1][S]);
-            else             L[o][s]=gaussian_filter(L[o][s-1],sig[s]);
+    for(int o=0;o<OCT;o++){ // 옥타브만큼 for문 진행
+        for(int s=0;s<S+3;s++){ // 각 옥타브의 scale만큼 for문을 진행.
+            if(o==0 && s==0) L[o][s]=base; // octave가 0일 때, 그리고 scale이 0일 경우 해당 이미지는 원본임을 나타냅니다.
+            else if(s==0)    L[o][s]=downsample(L[o-1][S]); // octave가 1,2 등 0이 아닌 임의의 값이며, scale의 0일 경우, downsample 을 진행한다는 뜻입니다.
+			                                                // 즉, 각 octave의 레벨0 (최초 또는 처음에 위치한 이미지)임을 뜻합니다.
+														    // 그러므로, 이전 옥타브의 레벨0 scale의 값을 다운 샘플링하여, 다음 옥타브의 레벨0을 만들어주는 것입니다.
+            else             L[o][s]=gaussian_filter(L[o][s-1],sig[s]); // 이전의 scale을 참조하여 가우시안 필터(스무딩, 블러링)를 진행합니다. 즉, 2차원 배열에 이미지 피라미드를 
+			                                                            // 형성합니다.
         }
     }
 
-    for(int o=0;o<OCT;o++){
+    for(int o=0;o<OCT;o++){  
         for(int i=0;i<S+2;i++){
             //DoG[o][i]=L[o][i+1]-L[o][i];
-            sub_pgm(DoG[o][i],L[o][i+1],L[o][i]);
+            sub_pgm(DoG[o][i],L[o][i+1],L[o][i]); // 이미지 두개를 Subtract 한다. 
         }
     }
 }

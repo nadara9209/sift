@@ -12,9 +12,9 @@ using namespace std;
 
 int OCT;
 const double SIGMAi      = 0.5;  
-const double SIGMA0      = 1.6; /
+const double SIGMA0      = 1.6; // 논문에서 루트2 의 값으로 나타난 k의 값.
 const int    S           = 3;  // 한 옥타브 당 효율이 높은 것은 3개의 scale을 가지고 있을 때 라고, 논문 p.9 에 명시되어 있다.  
-const bool   IMG_DOUBLED = false;   
+const bool   IMG_DOUBLED = false;   // 이미지가 정상적으로 불러드린 작동 유무를 위한 변수.
 const double CONTR_THR   = 0.04;    
 const double CURV_THR    = 10;
 const double EDGE_THR    = (CURV_THR+1.0)*(CURV_THR+1.0)/CURV_THR;
@@ -39,12 +39,12 @@ void compute_descriptors(PGM **L,list<SIFT_DESCRIPTOR> &keys);
 
 
 PGM  gaussian_filter(PGM &src,double sig);
-PGM  downsample(PGM &src);
-void sub_pgm(PGM &dst,PGM &a,PGM &b);
+PGM  downsample(PGM &src); // 다운샘플링
+void sub_pgm(PGM &dst,PGM &a,PGM &b); // dst = a - b 
 void inverse(double mat[3][3],double inv[3][3]);
 
 #ifndef ABS
-#define ABS(x) ( ( x < 0 )? -x : x )
+#define ABS(x) ( ( x < 0 )? -x : x )  // 절대값 정의
 #endif
 
 
@@ -115,10 +115,11 @@ void SIFT(PGM &_src,list<SIFT_DESCRIPTOR> &keys,CString &t)
         delete[] L[o];
         delete[] DoG[o];
     }
-    delete[] L;
-    delete[] DoG;
+    delete[] L; // L 배열 전체 삭제.
+    delete[] DoG; // DOG 배열 전체 삭제.
     
     for(list<SIFT_DESCRIPTOR>::iterator it=keys.begin();it!=keys.end();it++){
+         
         delete (*it).ddata;
         (*it).ddata=NULL;
     }
@@ -176,8 +177,8 @@ PGM create_init_image(PGM &src) //이미지 참조하는 부분.
 {
     if(IMG_DOUBLED){ // src를 참조하여, 이미지가 존재하지 않을 경우
 
-        cout<<"not defined sequence!!!!!!!!!!!!"<<endl;       
-        return src;
+        cout<<"not defined sequence!!!!!!!!!!!!"<<endl; // 에러를 출력하는 문구!    
+        return src;  // 
 	}
     else{
         
@@ -240,12 +241,12 @@ bool is_extremum(PGM **DoG,int o,int s,int u,int v) // 극값 추출할 때, 예
         for(int ds=s-1;ds<=s+1;ds++) //
             for(int du=u-1;du<=u+1;du++) //
                 for(int dv=v-1;dv<=v+1;dv++) //
-                    if(val>DoG[o][ds][du][dv]) return false;    
+                    if(val>DoG[o][ds][du][dv]) return false;
     }
     
     return true;
 }
-SIFT_DESCRIPTOR* interp_extremum(PGM **DoG,int o,int s,int u,int v)// 극한 값 
+SIFT_DESCRIPTOR* interp_extremum(PGM **DoG,int o,int s,int u,int v)// 설정자 극한값 비교. 
 {
     double dx[3];
     double dD[3];
@@ -357,12 +358,12 @@ void ori_hist(PGM &L,DETECTION_DATA *dat,double hst[ORI_HIST_BINS])
     int    RAD=(int)round(ORI_RADIUS*dat->scl_octv);
     double sig=ORI_SIG_FCTR*dat->scl_octv;
     
-    for(int i=0;i<ORI_HIST_BINS;i++) hst[i]=0;
+    for(int i=0;i<ORI_HIST_BINS;i++) hst[i]=0; //초기화
     
-    int W=L.width();
-    int H=L.height();
+    int W=L.width(); //너비
+    int H=L.height(); //높이
     
-    sig=2.0*sig*sig;
+    sig=2.0*sig*sig; //
     for(int i=-RAD;i<=RAD;i++){
         int px=i+dat->u;
         if(px<=0 || px>=W-1) continue;
@@ -552,40 +553,46 @@ void compute_descriptors(PGM **L,list<SIFT_DESCRIPTOR> &keys)
 }
 PGM gaussian_filter(PGM &src,double sig)
 {
-    int W=src.width();
-    int H=src.height();
+    int W=src.width(); // 너비 선언
+    int H=src.height(); //높이 선언
     
     PGM tmp(W,H);
     PGM dst(W,H);
     
-    int Wm=(int)round((3.0*sig)*2+1)|1;  
-    
-
+    int Wm=(int)round((3.0*sig)*2+1)|1;
+	// Wm은 가우시안 마스크의 크기를 결정하여 저장해준 값입니다.
+	// +1 을 해준 경우는 홀수로 만들기 위한 값 입니다.
+	//해당 내용은 한빛미디어의 영상처리 프로그래밍 p. 373에 설명되어있습니다.
     double *msk=new double[Wm+1];
-    
-    double sum=-1.0;
-    sig=-0.5/(sig*sig);
+    // 동적할당 된 메모리 공간 msk에 마스크 값을 저장하였습니다.
 
-	msk[0]=1;
+    double sum=-1.0; //sum의 경우, 별의미 없는 초기화 값으로 보여집니다.  
+    sig=-0.5/(sig*sig); //sig의 경우 입력받은 값이며, sig는 가우시안 함수의 지수승을 나타내기위한 중간 정리 부분 입니다.
+
+	msk[0]=1;// ??
 
     
 	for(int i=0;i<=Wm/2;i++){
-        double t=exp(sig*i*i);
+        double t=exp(sig*i*i); // t는 가우시안 함수의 자연함수 부분의 값입니다. i는 x값입니다.
         
-        msk[(Wm/2+i)]=t;
-        sum+=msk[(Wm/2+i)]*2;
+        msk[(Wm/2+i)]=t; // 가우시안 함수의 경우, 중간값을 경계로 좌우의 y값이 동일합니다. 그러므로 msk[(Wm/2+i)+i]를 함으로써 중간 값부터 그 값을 저장해줍니다.
+        sum+=msk[(Wm/2+i)]*2; // 위에서 중간 값을 경계로 우측의 y값만을 저장해주었으므로, *2를 해줌으로서 좌우 값을 도출할 수 있습니다.
+		                      // 즉, 최종적으로, sum의 경우 가우시안 함수가 그리는 모든 y값의 합으로 볼 수 있습니다.
     }
     
-    sum = 1.0/sum;
+    sum = 1.0/sum;  // 모든 y값의 합을 모든 마스크에 곱해주기위하여 분모로 저장해주도록 합니다. 
     for(int i=0;i<=Wm/2;i++){
-        msk[(Wm/2+i)]=msk[(Wm/2-i)]=msk[(Wm/2+i)]*sum;
+        msk[(Wm/2+i)]=msk[(Wm/2-i)]=msk[(Wm/2+i)]*sum; //자신의 값을 간직한 모든 마스크에 sum을 곱해주도록 합니다.
+		// 즉, 모든 마스크의 값을 더하면, 최종적으로 "1"의 값을 형성하게 됩니다.
+		// 한빛미디어 영상처리 책 p.365 가중 평균, 그림 8-6의 개념과 유사하다.
     }
     
     for(int x=0;x<W;x++){
         for(int y=0;y<H;y++){
-            sum=0;
-            for(int i=0;i<Wm;i++){
+            sum=0;// 너비와 높이 만큼 계산하는 것.
+            for(int i=0;i<Wm;i++){ //추후 진행
                 sum+=msk[i]*src(x,y+i-Wm/2);
+				
             }
             tmp[x][y]=sum;
         }
@@ -622,26 +629,26 @@ PGM downsample(PGM &src) // 다운 샘플링
     
     return tmp;  // 정리된 tmp , 이미지 정보 반환
 }
-void sub_pgm(PGM &dst,PGM &a,PGM &b)
+void sub_pgm(PGM &dst,PGM &a,PGM &b) // sub_pgm은 말 그대로 subtract, 빼기 해주는 함수입니다.
 {
-    int W=min(a.width() ,b.width()); 
-    int H=min(a.height(),b.height());
+    int W=min(a.width() ,b.width()); //비교를 위한 최소의 너비 값 추출
+    int H=min(a.height(),b.height()); // 비교를 위한 최소의 높이 값 추출
     
-    dst.reset(W,H);
-    for(int x=0;x<W;x++){
-        for(int y=0;y<H;y++){
-            dst[x][y]=a[x][y]-b[x][y];
+    dst.reset(W,H); // 추출한 너비와 높이에 대한 /
+    for(int x=0;x<W;x++){//너비 만큼
+        for(int y=0;y<H;y++){//높이 만큼
+            dst[x][y]=a[x][y]-b[x][y]; //즉, 두개의 이미지에서 서로를 빼줄 수 있는 값을 빼준다.
         }
     }
 }
 
-void inverse(double mat[3][3],double inv[3][3])
+void inverse(double mat[3][3],double inv[3][3]) //역으로 해주기위한 함수 3x3마스크
 {
     double buf;
     
-    for(int i=0;i<3;i++){
-        for(int j=0;j<3;j++) inv[i][j]=0;
-        inv[i][i]=1;
+    for(int i=0;i<3;i++){// inv의 값정리.
+        for(int j=0;j<3;j++) inv[i][j]=0; // 배열의 모든 값, 마스크의 모든 값을 0으로 초기화
+        inv[i][i]=1; // (0,0) ,(1,1) , (2,2) 에 해당하는 기준 값들을 1로 선언.
     }
 
     for(int i=0;i<3;i++){
@@ -649,8 +656,9 @@ void inverse(double mat[3][3],double inv[3][3])
         for(int j=0;j<3;j++){
             mat[i][j]*=buf;
             inv[i][j]*=buf;
+			
         }
-        
+          
         for(int j=0;j<3;j++){
             if(i!=j){
                 buf=mat[j][i];

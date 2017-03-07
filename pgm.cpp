@@ -3,11 +3,11 @@
 #include "pgm.h"
 
 #include <fstream>
-using namespace std;
+using namespace std; // std::cout 를 통해 이야기 하는 부분.
 
-PGM::PGM(int _w,int _h)
+PGM::PGM(int _w,int _h) // 너비와 높이를 입력 받는 PGM 이며, 초기화에 해당한다고 생각하며된다.
 {
-    pixels=NULL;
+    pixels=NULL; 
     reset(_w,_h);
 }
 PGM::PGM(int _w,int _h,unsigned char *gray)
@@ -39,9 +39,9 @@ PGM::~PGM()
 {
     free();
 }
-void PGM::reset(int _w,int _h)
+void PGM::reset(int _w,int _h) // reset 부분
 {
-    free();
+    free(); // pixels의 배열 을 초기화 해준다.
     
     W=_w;
     H=_h;
@@ -52,8 +52,8 @@ void PGM::reset(int _w,int _h)
 }
 void PGM::free()
 {
-    if(pixels!=NULL){
-        if(pixels[0]!=NULL) delete[] pixels[0];
+    if(pixels!=NULL){ // pixels에 수가 있을 경우 if문
+        if(pixels[0]!=NULL) delete[] pixels[0]; //
         delete[] pixels;
         pixels=NULL;
     }
